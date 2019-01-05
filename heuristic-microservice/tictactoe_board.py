@@ -53,11 +53,11 @@ def play(cpuX, abOn):
 
     print_board(minimax.board)
     if minimax.winner() == 'N':
-        print("Cat game")
+        print("Game draw")
     elif minimax.winner() == humanval:
         print("You Win!")
     elif minimax.winner() == cpuval:
-        print("CPU Wins!")
+        print("Machine Wins!")
 
 
 def main():
