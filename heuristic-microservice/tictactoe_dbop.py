@@ -1,24 +1,47 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, null, Integer, String, JSON, DateTime
+# from sqlalchemy.dialects.sqlite import JSON
+from datetime import date
+import logging
+import sys
+# from sqlalchemy import cast, type_coerce
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tic-tac-toe.db'
-db = SQLAlchemy(app)
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-    def __repr__(self):
-        return '<User %r>' % self.username
+Base = declarative_base()
 
 
 class TicTacToeDbOp:
-    def __init__(self):
-        # do nothing yet
-        x = 0
+    engine = create_engine('sqlite:///tic-tac-toe.db', echo=True)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-    def write(self, game_state):
+    def __init__(self):
+        Base.metadata.create_all(self.engine)
+
+    def write(self, the_state, the_winner):
+        try:
+            game_state = GameState(the_state, the_winner)
+            self.session.add(game_state)
+            self.session.commit()
+        except:
+            logging.error('TicTacToeDbOp write() error: ', sys.exc_info()[0])
         return
+
+    def close(self):
+        self.session.close()
+
+
+class GameState(Base):
+    __tablename__ = 'game_state'
+    id = Column(Integer, primary_key=True)
+    # state = Column(JSON)
+    state = Column(String)
+    winner = Column(String(1))
+    create_datetime = Column(DateTime)
+
+    def __init__(self, the_state, the_winner):
+        self.state = the_state
+        self.winner = the_winner
+        self.create_datetime = date.today()
+

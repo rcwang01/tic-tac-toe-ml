@@ -1,6 +1,7 @@
-import pickle
 import random
 from tictactoe_dbop import TicTacToeDbOp
+# import pickle
+import json
 
 
 def generate_game_play(rounds, is_machine_x):
@@ -11,7 +12,7 @@ def generate_game_play(rounds, is_machine_x):
             game_play.get_next_move(TicTacToeRandom.get_next_move(game_play.game_state))
 
         dbop = TicTacToeDbOp()
-        dbop.write(game_play.game_state)
+        dbop.write(json.dumps(game_play.game_state), 'X')
         print('Round: ' + str(count) + ' = ' + str(game_play.game_state))
 
 
@@ -25,6 +26,11 @@ class TicTacToeRandom:
             if not game_state[num_position]:
                 open_position.append(num_position)
         return random.choice(open_position)
+
+
+class TicTacToeGameState:
+    game_state = {}
+    winner = 'N'
 
 
 class TicTacToeGamePlay:
