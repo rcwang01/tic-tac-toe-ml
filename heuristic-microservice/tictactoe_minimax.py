@@ -138,7 +138,7 @@ class TicTacToeMinimax:
                     return beta
             return beta
 
-    def ab_decision(self,val):
+    def ab_decision(self, val):
         # returns an action (col, row, val)
         if val is 'X':
             limit = float("-inf")
