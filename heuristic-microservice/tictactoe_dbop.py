@@ -12,7 +12,7 @@ Base = declarative_base()
 
 
 class TicTacToeDbOp:
-    engine = create_engine('sqlite:///tic-tac-toe.db', echo=True)
+    engine = create_engine('sqlite:///tic-tac-toe.db', echo=False)
     Session = sessionmaker(bind=engine)
     session = Session()
 
