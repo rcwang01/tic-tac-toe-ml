@@ -12,6 +12,7 @@ num_matrix = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 def generate_game_play(rounds, is_machine_x):
     random_move_first = True
+    dbop = TicTacToeDbOp()
     if is_machine_x:
         random_move_first = False
     for count in range(rounds):
@@ -20,12 +21,13 @@ def generate_game_play(rounds, is_machine_x):
         while not game_play.game_over:
             # print('  Machine is ' + game_play.machine_mover + ' Game state is ' + str(game_play.game_state))
             game_play.get_next_move(TicTacToeRandom.get_next_move(random_move_first, game_play.game_state))
-        dbop = TicTacToeDbOp()
         if game_play.game_state.get('winner') is None:
-            dbop.write(json.dumps(game_play.game_state), '')
+            dbop.write(json.dumps(game_play.game_data), '')
         else:
-            dbop.write(json.dumps(game_play.game_state), game_play.game_state['winner'])
-        print('Round: ' + str(count) + ' = ' + str(game_play.game_state))
+            dbop.write(json.dumps(game_play.game_data), game_play.game_data['winner'])
+        print('Round: ' + str(count) + ' = ' + str(game_play.game_data))
+    # need to avoid keeping DB open when is not needed
+    dbop.close()
 
 
 class TicTacToeRandom:
@@ -101,6 +103,7 @@ class TicTacToeGamePlay:
     # this class only operate with TicTacToeMinimax class
     # game_state is to keep {position: [sequence, X/O]} format
     game_state = {}
+    game_data = {}
     game_over = False
     minimax = None
     sequence = 0
@@ -115,6 +118,7 @@ class TicTacToeGamePlay:
         # wipe out all previous game.
         self.minimax = TicTacToeMinimax()
         self.game_state.clear()
+        self.game_data.clear()
         self.game_over = False
         self.sequence = 0
         self.machine_mover = 'O'
@@ -130,6 +134,7 @@ class TicTacToeGamePlay:
             start_position = self.convert_from_coordinate(action[0], action[1])
             self.sequence = 1
             self.game_state.update({start_position: [self.sequence, self.machine_mover]})
+            self.game_data.update({self.sequence: [start_position, self.machine_mover]})
         return start_position
 
     def get_next_move(self, opponent_move):
@@ -142,6 +147,7 @@ class TicTacToeGamePlay:
             # ----------------------
             # record opponent's move
             self.game_state.update({opponent_move: [self.sequence, opponent_mover]})
+            self.game_data.update({self.sequence: [opponent_move, opponent_mover]})
             # ----------------------
             opponent_coordinate = self.convert_to_coordinate(opponent_move)
             self.minimax.play_square(opponent_coordinate[0], opponent_coordinate[1], opponent_mover)
@@ -150,6 +156,7 @@ class TicTacToeGamePlay:
             # ----------------------
             # record winner
             self.game_state.update({'winner': ''})
+            self.game_data.update({'winner': ''})
             # ----------------------
             self.game_over = True
         else:
@@ -157,6 +164,7 @@ class TicTacToeGamePlay:
                 # ----------------------
                 # record winner
                 self.game_state.update({'winner': self.minimax.winner()})
+                self.game_data.update({'winner': self.minimax.winner()})
                 # ----------------------
                 self.game_over = True
             else:
@@ -168,11 +176,13 @@ class TicTacToeGamePlay:
                 # ----------------------
                 # record machine's move
                 self.game_state.update({next_move: [self.sequence, self.machine_mover]})
+                self.game_data.update({self.sequence: [next_move, self.machine_mover]})
                 # ----------------------
                 if self.minimax.winner() == self.machine_mover:
                     # ----------------------
                     # record winner
                     self.game_state.update({'winner': self.minimax.winner()})
+                    self.game_data.update({'winner': self.minimax.winner()})
                     # ----------------------
                     self.game_over = True
         return next_move

@@ -21,8 +21,8 @@ class TicTacToeDbOp:
 
     def write(self, the_state, the_winner):
         try:
-            game_state = GameState(the_state, the_winner)
-            self.session.add(game_state)
+            game_data = GameState(the_state, the_winner)
+            self.session.add(game_data)
             self.session.commit()
         except:
             logging.error('TicTacToeDbOp write() error: ', sys.exc_info()[0])
