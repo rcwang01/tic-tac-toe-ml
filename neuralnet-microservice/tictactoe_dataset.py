@@ -10,6 +10,7 @@ from datetime import date
 import logging
 import json
 import sys
+import csv
 
 input_template = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.00]
 winner_x_sequence = [1, 3, 5, 7, 9]
@@ -31,6 +32,7 @@ def  convert_to_neural_input(winner, begin_id, end_id):
             .filter(GameState.winner == winner \
                     , GameState.id >= begin_id \
                     , GameState.id <= end_id) \
+            .order_by(GameState.id) \
             .all()
         for game_state in game_states:
             the_state = json.loads(str(game_state.state))
@@ -41,15 +43,20 @@ def  convert_to_neural_input(winner, begin_id, end_id):
             elif winner == 'O':
                 winner_sequence = winner_o_sequence.copy()
             for index in range(len(winner_sequence)):
+                if the_state.get(str(winner_sequence[index])) is None:
+                    break
                 the_input = input_template.copy()
                 the_sequence = winner_sequence[index]
                 for sub_index in range(the_sequence):
-                    position_pair = the_state.get(sub_index+1)
+                    position_pair = the_state.get(str(sub_index+1))
                     if position_pair is None:
                         break
-                    the_input[sub_index] = position_pair[0]
+                    the_input[sub_index] = int(position_pair[0])
                 the_input[len(input_template)-1] = round(the_sequence/step_count, 2)
-                print('Row ID ' + str(begin_id+index) + ' convert to ' + str(the_input))
+                print('Row ID ' + str(game_state.id) + ' convert to ' + str(the_input))
+                with open(r'tic-tac-toe.csv', 'a') as csv_file:
+                    writer = csv.writer(csv_file)
+                    writer.writerow(the_input)
             counter += 1
 
     except:
@@ -78,6 +85,6 @@ if __name__ == '__main__':
     if len(sys.argv) >= 4:
         convert_to_neural_input(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
     elif len(sys.argv) == 3:
-        convert_to_neural_input(sys.argv[1], int(sys.argv[2]), 999999)
+        convert_to_neural_input(sys.argv[1], int(sys.argv[2]), 99999999)
     else:
         print('Error: Please enter at least two argument')
