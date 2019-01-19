@@ -20,7 +20,7 @@ engine = create_engine('sqlite:///tic-tac-toe.db', echo=False)
 Session = sessionmaker(bind=engine)
 
 
-def  convert_to_neural_input(winner, begin_id, end_id):
+def  convert_to_neural_input(cvs_file, winner, begin_id, end_id):
     Base.metadata.create_all(engine)
     session = Session()
     counter = 0
@@ -54,8 +54,8 @@ def  convert_to_neural_input(winner, begin_id, end_id):
                     the_input[sub_index] = int(position_pair[0])
                 the_input[len(input_template)-1] = round(the_sequence/step_count, 2)
                 print('Row ID ' + str(game_state.id) + ' convert to ' + str(the_input))
-                with open(r'tic-tac-toe.csv', 'a') as csv_file:
-                    writer = csv.writer(csv_file)
+                with open(cvs_file, 'a') as csv_fd:
+                    writer = csv.writer(csv_fd)
                     writer.writerow(the_input)
             counter += 1
 
@@ -82,9 +82,9 @@ class GameState(Base):
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) >= 4:
-        convert_to_neural_input(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
-    elif len(sys.argv) == 3:
-        convert_to_neural_input(sys.argv[1], int(sys.argv[2]), 99999999)
+    if len(sys.argv) >= 5:
+        convert_to_neural_input(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
+    elif len(sys.argv) == 4:
+        convert_to_neural_input(sys.argv[1], sys.argv[2], int(sys.argv[3]), 99999999)
     else:
         print('Error: Please enter at least two argument')
