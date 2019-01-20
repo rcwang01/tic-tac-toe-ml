@@ -1,30 +1,57 @@
+import keras
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy
-import os
-# fix random seed for reproducibility
-numpy.random.seed(7)
-# load pima indians dataset
-dataset = numpy.loadtxt("pima-indians-diabetes.csv", delimiter=",")
-# split into input (X) and output (Y) variables
-X = dataset[:,0:8]
-Y = dataset[:,8]
-# create model
-model = Sequential()
-model.add(Dense(12, input_dim=8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))
-# Compile model
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-# Fit the model
-model.fit(X, Y, epochs=100, batch_size=10)
-# evaluate the model
-scores = model.evaluate(X, Y)
-print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-# serialize model to JSON
-model_json = model.to_json()
-with open("model.json", "w") as json_file:
-    json_file.write(model_json)
-# serialize weights to HDF5
-model.save_weights("model.h5")
-print("Saved model to disk")
+# import os
+
+
+def start_learning(csv_file):
+    ml = TicTacToeLearning()
+    ml.start(csv_file)
+    ml.save_model()
+    ml.save_weight()
+
+
+class TicTacToeLearning:
+    net_model = Sequential()
+    file_base = ''
+
+    def __init__(self):
+        return
+
+    def start(self, csv_file):
+        self.file_base = csv_file
+        numpy.random.seed(7)
+        game_states = numpy.loadtxt(csv_file+'.csv', delimiter=',')
+        # expected input and output for neural net
+        state_input = game_states[:, 0:9]
+        state_output = keras.utils.to_categorical(numpy.rint((game_states[:, 9]*10)-1), num_classes=10)
+
+        self.net_model.add(Dense(15, input_dim=9, activation='relu'))
+        self.net_model.add(Dense(9, activation='relu'))
+        self.net_model.add(Dense(10, activation='sigmoid'))
+        self.net_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        # Fit the model
+        self.net_model.fit(state_input, state_output, epochs=100, batch_size=500)
+        # evaluate the model
+        scores = self.net_model.evaluate(state_input, state_output)
+        print("\n%s: %.2f%%" % (self.net_model.metrics_names[1], scores[1]*100))
+
+    def save_model(self):
+        model_json = self.net_model.to_json()
+        with open(self.file_base + '-model.json', 'w') as json_file:
+            json_file.write(model_json)
+
+    def save_weight(self):
+        self.net_model.save_weights(self.file_base + '-weight.h5')
+
+    def __del__(self):
+        keras.backend.clear_session()
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) >= 2:
+        start_learning(sys.argv[1])
+    elif len(sys.argv) == 1:
+        start_learning('tic-tac-toe-x')
