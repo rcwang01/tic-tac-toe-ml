@@ -29,7 +29,7 @@ Markdown==2.6.11
 MarkupSafe==1.0
 mccabe==0.6.1
 nltk==3.3
-numpy==1.14.5
+numpy==1.22.0
 parse==1.8.4
 parse-type==0.4.2
 pipenv==2018.7.1
