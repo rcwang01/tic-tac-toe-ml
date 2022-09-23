@@ -34,7 +34,7 @@ parse==1.8.4
 parse-type==0.4.2
 pipenv==2018.7.1
 pluggy==0.7.1
-protobuf==3.6.0
+protobuf==3.18.3
 pydot==1.2.4
 pylint==2.1.0
 pyparsing==2.2.0
